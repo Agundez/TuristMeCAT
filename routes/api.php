@@ -9,4 +9,4 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 
 Route::apiResource('place', 'PlaceController');
 Route::apiResource('user', 'UserController');
-Route::apiResource('login', 'LoginController@login');
+Route::post('login', 'LoginController@login');

@@ -13,7 +13,7 @@ protected $table = 'places';
         'title', 'description', 'startDate', 'endDate', 'coordX', 'coordY'];
 
 
-    public function places(){
-        return $this->hasMany('App\User');
+    public function user(){
+        return $this->belongsTo('App\User');
     }
 }

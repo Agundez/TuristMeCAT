@@ -17,9 +17,25 @@ class PlaceController extends Controller
      */
     public function index()
     {
-        //
-    }
+      $key = $this->key;
+      $headers = getallheaders();
+      $token = $headers['Authorization'];
+      $user = JWT::decode($token, $key, array('HS256'));
+      $idUser = $user->user->id;
 
+      $userPlaces = Place::where('user_id', $idUser)->get();
+
+      $places = [];
+
+        foreach ($userPlaces as $place){
+          $places[] = $place;
+        }
+      
+        return response()->json([
+        'places'=> $places,
+        ]);
+    }
+    
     /**
      * Show the form for creating a new resource.
      *
@@ -39,22 +55,23 @@ class PlaceController extends Controller
     public function store(Request $request)
     {
        
-       $key = $this->key;
-       $headers = getallheaders();
-       $token = $headers['Authorization'];
-       $User = JWT::decode($token, $key, array('HS256'));
+      $key = $this->key;
+      $headers = getallheaders();
+      $token = $headers['Authorization'];
+      $user = JWT::decode($token, $key, array('HS256'));
 
+       
+      $place = new Place();
+      $place->title = $request->title;
+      $place->description = $request->description;
+      $place->startDate = $request->startDate;
+      $place->endDate = $request->endDate;
+      $place->coordX = $request->coordX;
+      $place->coordY = $request->coordY;
+      $place->user_id = $user->user->id;
 
-       $place = new Place();
-       $place->title = $request->title;
-       $place->description = $request->description;
-       $place->startDate = $request->startDate;
-       $place->endDate = $request->endDate;
-       $place->coordX = $request->coordX;
-       $place->coordY = $request->coordY;
-       $place->user_id = $User->user->id;
-
-       if ($request->title == null or $request->description == null or $request->startDate == null or $request->endDate == null or $request->coordX == null or $request->coordY == null){
+        if ($request->title == null or $request->description == null or $request->startDate == null or $request->endDate == null or $request->coordX == null or $request->coordY == null)
+      {
 
         return response(204);
 

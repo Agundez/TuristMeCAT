@@ -13,5 +13,36 @@ class Controller extends BaseController
 {
     use AuthorizesRequests, DispatchesJobs, ValidatesRequests;
 
-    protected $key = '47asfasdSDgasdgFsd571Hsa2';
+    protected $key = 'crPTj7hQpfZcDqZ23mMBjzMsECxZ4jes';
+
+    protected function error($code, $message)
+    {
+    	$json = ['message' => $message];
+    	$json = json_encode($json);
+    	return response($json, $code);
+    }
+
+    protected function success($message, $data = [])
+    {
+    	$json = ['message' => $message, 'data' => $data];
+    	$json = json_encode($json);
+    	return response($json, 200);
+    }
+
+    protected function checkLogin($email, $password)
+    {
+        $userSave = User::where('email', $email)->first();
+        if ($userSave == null)
+        {
+            return $this->error(401, 'This user does not exist');
+        }
+        $emailSave = $userSave->email;
+        $passwordSave = $userSave->password;
+        $passwordSave = decrypt($passwordSave);
+        if ($emailSave == $email and $passwordSave == $password)
+        {
+            return true;
+        }
+        return false;
+    }
 }

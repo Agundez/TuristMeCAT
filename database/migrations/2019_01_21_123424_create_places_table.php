@@ -19,8 +19,8 @@ class CreatePlacesTable extends Migration
             $table->string('description');
             $table->string('startDate');
             $table->string('endDate');
-            $table->float('coordX');
-            $table->float('coordY');
+            $table->double('coordX');
+            $table->double('coordY');
             $table->integer('user_id');
             $table->timestamps();
         });

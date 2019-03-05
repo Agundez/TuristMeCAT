@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<link href='https://fonts.googleapis.com/css?family=Roboto' rel='stylesheet'>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+	<title>Panel Admin</title>
+
+	<style>
+	*
+	{
+		font-family: 'Roboto';
+	}
+
+	body
+	{
+		background-color: #E7E4E3;
+	}
+
+	#form
+	{
+		text-align: center;
+		background-color: #FA8072;
+		margin-left: auto;
+		margin-right: auto;
+		color: black;
+		border: 3px solid black;
+	}
+
+	#box
+	{
+		text-align: center;
+		padding: 5px;
+		margin-left: auto;
+		margin-right: auto;
+		margin-top: inherit;
+		background-color: #FA8072;
+		border: 3px solid black;
+	}
+
+	h1
+	{
+		text-align: center;
+
+	}
+	.tableItems
+	{
+		text-align: center;
+		margin-left: auto;
+		margin-right: auto;
+		width: 350px;
+		color: black;
+	}
+	.table
+	{
+		text-align: center;
+		background-color: #FA8072;
+		margin-left: auto;
+		margin-right: auto;
+		padding: 10px;
+		border:1px solid black;
+	}
+
+	.button
+	{
+	  background-color: #FA8072;
+	  border: 3px solid black;
+	  color: black;
+	  padding: 15px 32px;
+	  text-align: center;
+	  text-decoration: none;
+	  display: inline-block;
+	  font-size: 16px;
+	}	
+	.buttonDefault
+	{
+
+		margin-top: 15px;
+		
+	}
+
+	.marginDiv
+	{
+		margin-top: 20px;
+
+	}
+
+	.logOut
+	{
+		margin-top: 150px;
+	}
+</style>
+
+</head>
+<body>
+	<div class="cajaLogin" style="text-align: center;">
+		<input class="button" type="button" onclick="logOut()" value="Log out">
+
+	</div>
+
+	<h1>Admin Panel</h1>
+
+	<div id="form">
+		<br>
+		<input type="name" id="name" placeholder="User" style="width: 200px; text-align: center;">
+		<br><br>
+		<input type="email" id="email" placeholder="Email" style="width: 200px; text-align: center;">
+		<br><br>
+		<input id="password" type="name" placeholder="Password" style="width: 200px; text-align: center;">
+		<br><br>
+		<input id="confirmPassword" type="name" placeholder="Confirm Password" style="width: 200px; text-align: center;">
+		<br><br>
+		<button id="create" onclick="createUser()" value="Create users">CREATE USER</button>
+		<br>
+	</div>
+	<br>
+	<br>
+
+	<h1>List of users</h1>
+
+	<div id="box">
+	</div>
+</body>
+
+<script type="text/javascript">
+
+	window.onload = function(){
+		console.log('Entrando en windowload');
+		checkAdmin();
+		showUsers();
+	};
+
+	function checkAdmin(){
+		var token = sessionStorage.getItem('token');
+		console.log(token);
+
+			if(token == null)
+		{
+			window.location.href = "http://localhost:8888/turistmeCAT/frontPanel/loginAdmin.html";
+		}
+	}
+
+	function showUsers(){
+		$("#table").remove();
+		$.ajax({
+		 	type: "GET",
+		 	url: "http://localhost:8888/turistmeCAT/public/api/user",
+			contentType: "application/json",    
+        	dataType:'json',
+
+			 beforeSend: function(request) {
+			 		request.setRequestHeader("Authorization", sessionStorage.getItem("token"));
+			 	},
+		 	success: function(response){
+		 		console.log(response);
+				
+				if(document.getElementById("table") == null)
+				{
+					$('<table id="table"/>').html("").appendTo('#box');
+					$('<th id="filaID" class="tableItems"/>').html("ID").appendTo('#table');
+					$('<th id="nameTable" class="tableItems"/>').html("NAME").appendTo('#table');
+					$('<th id="emailTable" class="tableItems"/>').html("EMAIL").appendTo('#table');
+					$('<th id="editTable" class="tableItems"/>').html("EDIT").appendTo('#table');
+					$('<th id="deleteTable" class="tableItems"/>').html("DELETE").appendTo('#table');
+				}
+				
+				for (i = 0; i < response.length; i++) {
+
+					$('<div class="marginDiv"><br>' + response[i].id + '</div>').appendTo('#filaID');
+				  	$('<div class="marginDiv"><br>' + response[i].name + '</div>').appendTo('#nameTable');
+				  	$('<div class="marginDiv"/><br>' + response[i].email + '</div>').appendTo('#emailTable');
+				  	$('<br>').html("").appendTo('#editTable');
+				  	$('<input id="name" type="text"  class="editName" placeholder="New Username">').html("").appendTo('#editTable').attr("id", response[i].id + "Name");
+
+				  	$('<br>').html("").appendTo('#editTable');
+
+				  	$('<input id="email" type="email"  class="editEmail" placeholder="New Email">').html("").appendTo('#editTable').attr("id", response[i].id + "Email");
+
+				  	$('<br>').html("").appendTo('#editTable');
+
+				  	$('<input id="password" type="password"  class="editPasword" placeholder="New password">').html("").appendTo('#editTable').attr("id", response[i].id + "Password");
+
+				  	$('<br>').html("").appendTo('#editTable');
+
+				  	$('<input type="button" class="buttonDefault" onclick="editUser(this)" value="Edit">').html("").appendTo('#editTable').attr("id", response[i].id);
+				  	$('<br>').html("").appendTo('#editTable');
+
+				  	$('<br><input type="button" onclick="deleteUser(this)" class="buttonDefault" value="Delete"><br>').html("").appendTo('#deleteTable').attr("id", response[i].id);
+				};
+		 	},
+		
+		 	error: function(response){
+		 		alert('Tienes que registrarte como admin para poder ver los usuarios');
+		 	}
+		});
+	}
+
+	function createUser() {
+
+			var name = document.getElementById('name').value;
+			var email = document.getElementById('email').value;		
+			var password = document.getElementById('password').value;
+			var confirmPassword = document.getElementById('confirmPassword').value
+
+			$.ajax({
+
+				url: 'http://localhost:8888/turistmeCAT/public/api/user',
+
+			 	data: {	
+			 		name: name,
+			 		email: email,
+					password: password,
+					confirm_password: confirmPassword
+				},
+
+			 	type: 'POST',
+			 	
+			 	dataType : 'json',
+
+		 		success: function(data){
+		 		alert("User created correctly");
+		 		showUsers();
+
+		 		},
+		 		error: function(xhr,status){
+		 			alert(xhr.responseJSON['MESSAGE']);
+		 		},
+			 });
+		}
+
+	function editUser(button){
+		var Authorization = sessionStorage.getItem("token");
+		var name = document.getElementById(button.id + "Name");
+		var email = document.getElementById(button.id + "Email");
+		var password = document.getElementById(button.id + "Password");
+    	$.ajax({
+		 	method: "PUT",
+		 	url: "http://localhost:8888/turistmeCAT/public/api/user/" + button.id,
+		 	headers:
+		 	{
+		 		"Authorization" : Authorization 
+		 	},
+		 	data: { 
+		 		name: name.value,
+		 		email: email.value,
+		 		password: password.value,
+		 		type: 'PUT',
+		 	},
+		 	success: function(response){
+		 		showUsers();
+		 		console.log(response);
+		 	},
+		
+		 	error: function(response){
+		 			alert(response.responseJSON['MESSAGE']);
+		 	},
+		});
+	}
+
+	function deleteUser(button) {
+		var Authorization = sessionStorage.getItem("token");
+		$(".error").remove(); 
+		$.ajax({
+		 	method: "DELETE",
+		 	url: "http://localhost:8888/turistmeCAT/public/api/user/" + button.id,
+		 	headers:
+		 	{
+		 		"Authorization" : Authorization 
+		 	},
+		 	success: function(response){
+		 		showUsers();
+		 		alert("User deleted correctly");
+
+		 	},
+		
+		 	error: function(xhr,status){
+		 			alert(xhr.responseJSON['MESSAGE']);
+		 		},
+		});		
+	}
+
+	function logOut()
+	{
+		console.log("logOut");
+		sessionStorage.clear();
+		window.location = "http://localhost:8888/turistmeCAT/frontPanel/loginAdmin.html";  
+	}
+</script>
+</html>
